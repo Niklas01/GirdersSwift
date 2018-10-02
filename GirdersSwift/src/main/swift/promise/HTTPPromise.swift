@@ -1,6 +1,10 @@
 import Foundation
 import PromiseKit
 
+public enum ResponseStatusError: Error {
+    case Canceled
+}
+
 /// Extension of the standard HTTP with Promises.
 public extension HTTP {
     
@@ -10,7 +14,11 @@ public extension HTTP {
                            completionHandler: { (result: Result<Response<T>, Error?>) in
                 switch result {
                 case .Failure(let error):
-                    seal.reject(error!)
+                    if error!.isCancelled {
+                        seal.reject(ResponseStatusError.Canceled)
+                    } else {
+                        seal.reject(error!)
+                    }
                 case .Success(let data):
                     seal.fulfill(data)
                 }
